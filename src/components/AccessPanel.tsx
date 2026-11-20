@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Copy, LogIn, LogOut, UploadCloud } from 'lucide-react';
+import { Copy, Download, LogIn, LogOut, UploadCloud } from 'lucide-react';
 import { useAccess } from '../hooks/useAccess';
 import { useUI } from '../hooks/useUI';
-import { idbAdapter } from '../services/storage';
+import { idbAdapter, loadPrefs } from '../services/storage';
+import { exportJSON } from '../services/backup';
 import { cloudAdapter } from '../services/cloud';
 
 /** Settings section: who you are, signing in as the owner, sharing, and moving a local library up. */
@@ -18,9 +19,19 @@ export function AccessPanel() {
 
   // How many books are sitting in this browser's own (pre-cloud) library?
   useEffect(() => {
-    if (a.mode !== 'owner') return;
+    if (!a.cloud) return;
     idbAdapter.loadBooks().then((b) => setLocal(b.length), () => setLocal(0));
-  }, [a.mode]);
+  }, [a.cloud, a.mode]);
+
+  const saveLocal = async () => {
+    try {
+      const [books, sessions] = await Promise.all([idbAdapter.loadBooks(), idbAdapter.loadSessions()]);
+      await exportJSON(books, sessions, loadPrefs(), idbAdapter);
+      ui.toast('Backup saved to your Downloads');
+    } catch (err) {
+      ui.toast(`Could not save: ${(err as Error).message}`, 'error');
+    }
+  };
 
   if (!a.cloud) return null;
 
@@ -138,6 +149,28 @@ export function AccessPanel() {
             </button>
             <button type="button" className="btn" onClick={() => a.signOut()}>
               <LogOut size={12} /> Sign out
+            </button>
+          </div>
+        </div>
+      )}
+
+      {a.authError && a.mode !== 'owner' && (
+        <p className="access__error" role="alert">
+          That sign-in link did not work ({a.authError}). Links work once, for an hour, and only in the browser that asked for them; request a new one here.
+        </p>
+      )}
+
+      {a.mode === 'viewer' && !!local && (
+        <div className="srow">
+          <div className="srow__text">
+            <div className="srow__title">Books saved only in this browser</div>
+            <p className="srow__desc muted">
+              This browser holds {local} books from before the cloud archive. Sign in as the owner here to copy them up, or save them to a file and import it after signing in anywhere.
+            </p>
+          </div>
+          <div className="srow__ctl">
+            <button type="button" className="btn" onClick={saveLocal}>
+              <Download size={12} /> Save to a file
             </button>
           </div>
         </div>

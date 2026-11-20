@@ -1,5 +1,5 @@
 import type { Book, Prefs, ReadingSession } from '../types/book';
-import { storage } from './storage';
+import { storage, type StorageAdapter } from './storage';
 import { todayISO } from '../lib/util';
 
 export const BACKUP_FORMAT = 'the-reading-archive';
@@ -41,11 +41,11 @@ export function download(name: string, content: Blob) {
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-export async function buildBackup(books: Book[], sessions: ReadingSession[], prefs: Prefs): Promise<BackupFile> {
+export async function buildBackup(books: Book[], sessions: ReadingSession[], prefs: Prefs, source: StorageAdapter = storage): Promise<BackupFile> {
   const covers: BackupFile['covers'] = [];
   for (const b of books) {
     if (!b.coverBlobId) continue;
-    const blob = await storage.getCover(b.coverBlobId);
+    const blob = await source.getCover(b.coverBlobId);
     if (blob) covers.push({ id: b.coverBlobId, type: blob.type || 'image/jpeg', data: await blobToBase64(blob) });
   }
   return {
@@ -59,8 +59,8 @@ export async function buildBackup(books: Book[], sessions: ReadingSession[], pre
   };
 }
 
-export async function exportJSON(books: Book[], sessions: ReadingSession[], prefs: Prefs) {
-  const data = await buildBackup(books, sessions, prefs);
+export async function exportJSON(books: Book[], sessions: ReadingSession[], prefs: Prefs, source: StorageAdapter = storage) {
+  const data = await buildBackup(books, sessions, prefs, source);
   download(`reading-archive-backup-${todayISO()}.json`, new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
 }
 

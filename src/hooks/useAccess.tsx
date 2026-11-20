@@ -17,6 +17,8 @@ interface AccessCtx {
   canEdit: boolean;
   cloud: boolean;
   email: string | null;
+  /** Why the last sign-in link did not work, if it did not. */
+  authError: string | null;
   signIn(email: string): Promise<void>;
   signOut(): Promise<void>;
   recheck(): void;
@@ -29,18 +31,23 @@ export function AccessProvider({ children }: { children: ReactNode }) {
   const [owner, setOwner] = useState(false);
   const [ready, setReady] = useState(!cloudEnabled);
   const [tick, setTick] = useState(0);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!supabase) return;
     let alive = true;
-    supabase.auth.getSession().then(({ data }) => alive && setSession(data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
-    // After a sign-in link, the ?code=… has been exchanged; tidy the address bar.
-    const url = new URL(window.location.href);
-    if (url.searchParams.has('code')) {
-      url.searchParams.delete('code');
-      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
-    }
+    // getSession() waits for the client to finish starting up, which includes exchanging the
+    // ?code=… from a sign-in link. Only after that is it safe to tidy the address bar.
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (!alive) return;
+      setSession(data.session);
+      const url = new URL(window.location.href);
+      const failed = url.searchParams.get('error_description');
+      if (failed || error) setAuthError(failed ?? error?.message ?? 'Sign-in failed');
+      ['code', 'error', 'error_code', 'error_description'].forEach((k) => url.searchParams.delete(k));
+      if (url.href !== window.location.href) window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+    });
     return () => {
       alive = false;
       sub.subscription.unsubscribe();
@@ -83,11 +90,12 @@ export function AccessProvider({ children }: { children: ReactNode }) {
       canEdit: mode !== 'viewer',
       cloud: cloudEnabled,
       email: session?.user.email ?? null,
+      authError,
       signIn,
       signOut,
       recheck,
     }),
-    [ready, mode, session, signIn, signOut, recheck],
+    [ready, mode, session, authError, signIn, signOut, recheck],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

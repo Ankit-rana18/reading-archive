@@ -523,3 +523,12 @@ html[data-access='view'] :is(.brow__status select, .prio select) {
 .access__form .input {
   min-width: 220px;
 }
+
+.access__error {
+  margin: 12px 0 4px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(154, 74, 60, 0.1);
+  color: var(--rust);
+  font-size: 14px;
+}
