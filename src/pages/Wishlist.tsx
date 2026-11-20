@@ -160,7 +160,7 @@ export function Wishlist() {
                         .filter(Boolean)
                         .join(' · ') || 'Add a page count for a reading-time estimate'}
                     </span>
-                    <button type="button" className="btn btn--cobalt btn--sm" onClick={() => start(b)}>
+                    <button type="button" className="btn btn--accent btn--sm" onClick={() => start(b)}>
                       <BookOpen size={12} /> Start reading
                     </button>
                   </div>

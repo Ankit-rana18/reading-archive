@@ -56,18 +56,19 @@ export const cleanIsbn = (s?: string) => (s ?? '').replace(/[^0-9Xx]/g, '').toUp
 
 /** Cloth colours for generated spines and covers. */
 export const CLOTHS = [
-  { bg: '#1F3FB0', fg: '#F4F2ED' }, // cobalt
-  { bg: '#A4513D', fg: '#F4F2ED' }, // rust
-  { bg: '#777B55', fg: '#F4F2ED' }, // olive
-  { bg: '#1E1D1B', fg: '#E9DFC8' }, // ink
-  { bg: '#6E2A2A', fg: '#EEDFC6' }, // oxblood
-  { bg: '#C49A45', fg: '#1E1D1B' }, // ochre
-  { bg: '#2F4A3A', fg: '#E9DFC8' }, // forest
-  { bg: '#4D5763', fg: '#F1EDE4' }, // slate
-  { bg: '#E4DCCB', fg: '#1E1D1B' }, // linen
-  { bg: '#B8653A', fg: '#F7EFE2' }, // terracotta
-  { bg: '#24324F', fg: '#E6D6AE' }, // navy
-  { bg: '#8C8A7E', fg: '#141414' }, // stone
+  // Warm library cloths that sit with the sunset palette; order matters (picked by title hash).
+  { bg: '#754B50', fg: '#F4EFE9' }, // burgundy
+  { bg: '#A86E70', fg: '#F7EFE8' }, // dusty rose
+  { bg: '#7E866F', fg: '#F4EFE9' }, // sage
+  { bg: '#2E2827', fg: '#E9DCC8' }, // ink
+  { bg: '#5E2E33', fg: '#EEDFC6' }, // oxblood
+  { bg: '#B39A70', fg: '#2E2827' }, // antique gold
+  { bg: '#3F4F43', fg: '#E9DFC8' }, // forest
+  { bg: '#5A5E66', fg: '#F1EDE4' }, // slate
+  { bg: '#E8DED2', fg: '#302A29' }, // linen
+  { bg: '#A0644A', fg: '#F7EFE2' }, // terracotta
+  { bg: '#3E3245', fg: '#E6D6AE' }, // plum
+  { bg: '#9A8F86', fg: '#211C1B' }, // stone
 ];
 
 function luminance(hex: string): number {
@@ -93,7 +94,8 @@ export function bookShape(book: Pick<Book, 'title' | 'author' | 'pages'>) {
   const h0 = hash(norm(book.title) + '|' + norm(book.author));
   const rnd = (n: number) => ((h0 >>> n) & 255) / 255;
   const pages = book.pages && book.pages > 0 ? book.pages : 180 + rnd(3) * 320;
-  const spine = Math.min(0.2, Math.max(0.085, 0.07 + (pages / 1000) * 0.13)); // × H
+  // ~15% wider than a strict page-count ratio so spines read as physical books, not strips.
+  const spine = Math.min(0.23, Math.max(0.098, (0.07 + (pages / 1000) * 0.13) * 1.15)); // × H
   const height = 0.85 + rnd(11) * 0.15; // × H
   const style = h0 % 4; // spine typographic variant
   return { spine, height, style };

@@ -48,7 +48,7 @@
   line-height: 1.25;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--on-cobalt);
+  color: var(--on-accent);
   transform: scale(0);
   transition: transform 0.45s var(--ease);
 }
@@ -73,8 +73,8 @@
 
 .cursor[data-state='open'] .cursor__ring {
   transform: scale(1.75);
-  background: var(--cobalt);
-  border-color: var(--cobalt);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .cursor[data-state='open'] .cursor__dot {

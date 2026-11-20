@@ -103,7 +103,7 @@ export function ReadingProgress({ book, compact }: { book: Book; compact?: boole
             </label>
           )}
           <div className="rp__actions">
-            <button type="button" className="btn btn--cobalt" disabled={!changed} onClick={save}>
+            <button type="button" className="btn btn--accent" disabled={!changed} onClick={save}>
               Save progress
             </button>
             <button type="button" className="btn btn--solid" onClick={() => ui.openComplete(book.id)}>

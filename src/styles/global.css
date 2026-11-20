@@ -1,16 +1,24 @@
 /* ============ THE READING ARCHIVE — design system ============ */
 :root {
-  --paper: #edebe6;
-  --sheet: #f4f2ed;
-  --ink: #141414;
-  --muted: #77736b;
-  --cobalt: #1f3fb0;
-  --olive: #777b55;
-  --rust: #a4513d;
-  --rule: rgba(20, 20, 20, 0.18);
-  --rule-strong: rgba(20, 20, 20, 0.9);
-  --on-cobalt: #f4f2ed;
-  --shadow-ink: rgba(20, 16, 10, 0.55);
+  /* Warm literary palette: paper, ink, dusty rose / burgundy accent, sage and antique gold used sparingly. */
+  --paper: #ede5dc;
+  --sheet: #f4efe9;
+  --ink: #302a29;
+  --muted: #7b6f69;
+  --accent: #754b50;
+  --rose: #c58f91;
+  --olive: #8b927b;
+  --gold: #b39a70;
+  --rust: #9a4a3c;
+  --rule: rgba(80, 65, 58, 0.22);
+  --rule-strong: rgba(48, 42, 41, 0.72);
+  --on-accent: #f4efe9;
+  --shadow-ink: rgba(48, 30, 28, 0.5);
+  /* Translucent wash over the background video (stronger on text-heavy pages). */
+  --wash: rgba(245, 241, 235, 0.5);
+  --wash-page: rgba(245, 241, 235, 0.74);
+  --wash-floor: rgba(245, 241, 235, 0.62);
+  --glass: rgba(244, 239, 233, 0.62);
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-sheet: cubic-bezier(0.76, 0, 0.18, 1);
   --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
@@ -19,24 +27,30 @@
   --nav-h: 84px;
   --gutter: 32px;
   --grain-blend: multiply;
-  --grain-opacity: 0.55;
+  --grain-opacity: 0.4;
   color-scheme: light;
 }
 
 :root[data-theme='ink'] {
-  --paper: #171614;
-  --sheet: #1e1d1a;
-  --ink: #ece8df;
-  --muted: #9a958a;
-  --cobalt: #8ba0f2;
-  --olive: #a9ad84;
-  --rust: #d08a73;
-  --rule: rgba(236, 232, 223, 0.16);
-  --rule-strong: rgba(236, 232, 223, 0.8);
-  --on-cobalt: #121212;
+  --paper: #1b1716;
+  --sheet: #231e1d;
+  --ink: #efe7df;
+  --muted: #a89a92;
+  --accent: #d9a7a9;
+  --rose: #c58f91;
+  --olive: #a6ad94;
+  --gold: #cbb48a;
+  --rust: #d48f7b;
+  --rule: rgba(239, 231, 223, 0.16);
+  --rule-strong: rgba(239, 231, 223, 0.7);
+  --on-accent: #1b1716;
   --shadow-ink: rgba(0, 0, 0, 0.7);
+  --wash: rgba(27, 23, 22, 0.66);
+  --wash-page: rgba(27, 23, 22, 0.82);
+  --wash-floor: rgba(27, 23, 22, 0.5);
+  --glass: rgba(35, 30, 29, 0.66);
   --grain-blend: screen;
-  --grain-opacity: 0.22;
+  --grain-opacity: 0.18;
   color-scheme: dark;
 }
 
@@ -57,8 +71,12 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: var(--paper);
   color: var(--ink);
+}
+
+/* The paper colour shows only until the background video paints; body stays transparent above it. */
+html {
+  background: var(--paper);
 }
 
 body {
@@ -107,12 +125,12 @@ img {
 }
 
 ::selection {
-  background: var(--cobalt);
-  color: var(--on-cobalt);
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 :focus-visible {
-  outline: 1.5px solid var(--cobalt);
+  outline: 1.5px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -154,8 +172,8 @@ img {
   color: var(--muted);
 }
 
-.cobalt {
-  color: var(--cobalt);
+.accent {
+  color: var(--accent);
 }
 
 .box {
@@ -209,24 +227,24 @@ img {
   color: var(--paper);
 }
 
-.btn--cobalt {
-  border-color: var(--cobalt);
-  color: var(--cobalt);
+.btn--accent {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
-.btn--cobalt::before {
-  background: var(--cobalt);
+.btn--accent::before {
+  background: var(--accent);
 }
 
-.btn--cobalt:hover:not(:disabled),
-.btn--cobalt:focus-visible {
-  color: var(--on-cobalt);
+.btn--accent:hover:not(:disabled),
+.btn--accent:focus-visible {
+  color: var(--on-accent);
 }
 
 .btn--solid {
-  background: var(--cobalt);
-  border-color: var(--cobalt);
-  color: var(--on-cobalt);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
 }
 
 .btn--solid::before {
@@ -280,8 +298,8 @@ img {
 }
 
 .icon-btn[aria-pressed='true'] {
-  color: var(--cobalt);
-  border-color: var(--cobalt);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 /* ---------- tabs with sliding indicator ---------- */
@@ -310,7 +328,7 @@ img {
 
 .tabs__btn[aria-selected='true'],
 .tabs__btn[aria-pressed='true'] {
-  color: var(--on-cobalt);
+  color: var(--on-accent);
 }
 
 .tabs__ind {
@@ -318,7 +336,7 @@ img {
   top: 0;
   left: 0;
   height: 100%;
-  background: var(--cobalt);
+  background: var(--accent);
   z-index: -1;
   transition: transform 0.6s var(--ease), width 0.6s var(--ease);
 }
@@ -387,8 +405,8 @@ img {
 .input:focus,
 .textarea:focus,
 .select:focus {
-  border-bottom-color: var(--cobalt);
-  box-shadow: 0 1px 0 0 var(--cobalt);
+  border-bottom-color: var(--accent);
+  box-shadow: 0 1px 0 0 var(--accent);
 }
 
 .textarea {
@@ -400,7 +418,7 @@ img {
 }
 
 .textarea:focus {
-  border-color: var(--cobalt);
+  border-color: var(--accent);
   box-shadow: none;
 }
 
@@ -450,7 +468,7 @@ input[type='number'].input {
 
 .range::-webkit-slider-runnable-track {
   height: 2px;
-  background: linear-gradient(to right, var(--cobalt) var(--p), var(--rule) var(--p));
+  background: linear-gradient(to right, var(--accent) var(--p), var(--rule) var(--p));
 }
 
 .range::-moz-range-track {
@@ -460,7 +478,7 @@ input[type='number'].input {
 
 .range::-moz-range-progress {
   height: 2px;
-  background: var(--cobalt);
+  background: var(--accent);
 }
 
 .range::-webkit-slider-thumb {
@@ -470,7 +488,7 @@ input[type='number'].input {
   margin-top: -7px;
   border-radius: 50%;
   background: var(--sheet);
-  border: 1.5px solid var(--cobalt);
+  border: 1.5px solid var(--accent);
   transition: transform 0.3s var(--ease);
 }
 
@@ -479,7 +497,7 @@ input[type='number'].input {
   height: 14px;
   border-radius: 50%;
   background: var(--sheet);
-  border: 1.5px solid var(--cobalt);
+  border: 1.5px solid var(--accent);
 }
 
 .range:active::-webkit-slider-thumb {
@@ -505,7 +523,7 @@ input[type='number'].input {
 }
 
 .page-head__kicker {
-  color: var(--cobalt);
+  color: var(--accent);
   margin-bottom: 18px;
 }
 
@@ -708,7 +726,7 @@ input[type='number'].input {
 }
 
 .status-dot--reading {
-  background: var(--cobalt);
+  background: var(--accent);
 }
 
 .status-dot--want {
@@ -726,7 +744,7 @@ input[type='number'].input {
 .bar > i {
   position: absolute;
   inset: 0;
-  background: var(--cobalt);
+  background: var(--accent);
   transform-origin: 0 50%;
   transform: scaleX(var(--v, 0));
   transition: transform 1.1s var(--ease);
@@ -734,4 +752,57 @@ input[type='number'].input {
 
 .tnum {
   font-variant-numeric: tabular-nums;
+}
+
+/* ---------- live background ---------- */
+/* Layers: video → warm wash → grain (.grain) → interface → shelf → overlays. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--paper);
+}
+
+/* Poster fallback: a small still of the first scene, softened, shown until (or instead of) the video. */
+.backdrop::before {
+  content: '';
+  position: absolute;
+  inset: -40px;
+  background: url('/media/sunset-field.jpg') center / cover no-repeat;
+  filter: blur(14px);
+}
+
+.backdrop__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.backdrop__wash {
+  position: absolute;
+  inset: 0;
+  background: var(--wash);
+  transition: background-color 0.9s var(--ease);
+}
+
+/* Extra paper toward the bottom, where the caption and footer sit over the busy flower field. */
+.backdrop__wash::after {
+  content: '';
+  position: absolute;
+  inset: 45% 0 0 0;
+  background: linear-gradient(to bottom, transparent, var(--wash-floor) 55%);
+}
+
+.backdrop--dense .backdrop__wash {
+  background: var(--wash-page);
+}
+
+@media (forced-colors: active) {
+  .backdrop {
+    display: none;
+  }
 }

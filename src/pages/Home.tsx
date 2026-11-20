@@ -73,7 +73,7 @@ export function Home() {
           </div>
         </div>
         <Rise className="home__empty" delay={200}>
-          <Line className="lbl cobalt">An empty shelf</Line>
+          <Line className="lbl accent">An empty shelf</Line>
           <Line as="h1" className="empty__title">
             Your literary journey begins here.
           </Line>
@@ -110,7 +110,7 @@ export function Home() {
       {shown.length === 0 ? (
         <div className="empty home__none">
           <p className="empty__title">Nothing on this shelf yet.</p>
-          <button type="button" className="btn btn--cobalt" onClick={() => ui.openAdd(filter === 'all' ? undefined : filter)}>
+          <button type="button" className="btn btn--accent" onClick={() => ui.openAdd(filter === 'all' ? undefined : filter)}>
             <Plus size={13} /> Add a book
           </button>
         </div>

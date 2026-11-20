@@ -365,7 +365,7 @@ export function BookDetail() {
             </div>
           </div>
           <Rise className="detail__info" delay={620} trigger={`${book.id}-${run}`}>
-            <Line className="lbl cobalt">{statusLine}</Line>
+            <Line className="lbl accent">{statusLine}</Line>
             <Line as="h2" className="detail__title">
               {book.title}
             </Line>
@@ -382,7 +382,7 @@ export function BookDetail() {
             )}
             <Line className="detail__actions">
               <span className="detail__actions-inner">
-                <button type="button" className="btn btn--cobalt" onClick={() => ui.openEdit(book.id)}>
+                <button type="button" className="btn btn--accent" onClick={() => ui.openEdit(book.id)}>
                   <Pencil size={12} /> Edit book
                 </button>
                 <button type="button" className="btn" onClick={focusNotes}>
@@ -418,7 +418,7 @@ export function BookDetail() {
 
         <section className="xp" aria-label="My reading experience">
           <header className="xp__head">
-            <span className="lbl cobalt">My reading experience</span>
+            <span className="lbl accent">My reading experience</span>
             <hr className="rule" />
           </header>
 
@@ -596,7 +596,7 @@ function Desc({ text }: { text: string }) {
     <span className="desc">
       <span className={`desc__text ${long && !open ? 'is-clamped' : ''}`}>{text}</span>
       {long && (
-        <button type="button" className="lbl cobalt desc__more" onClick={() => setOpen((v) => !v)}>
+        <button type="button" className="lbl accent desc__more" onClick={() => setOpen((v) => !v)}>
           {open ? 'Show less' : 'Read more'}
         </button>
       )}

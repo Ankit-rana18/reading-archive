@@ -53,7 +53,7 @@ export function ReadingNow() {
           <span className="lbl muted">Daily goal</span>
           {goalDraft === null ? (
             <button type="button" className="today__goal" onClick={() => setGoalDraft(String(goal || ''))}>
-              {goal ? `${goal} pages a day` : 'Set a goal'} <span className="lbl cobalt">Edit</span>
+              {goal ? `${goal} pages a day` : 'Set a goal'} <span className="lbl accent">Edit</span>
             </button>
           ) : (
             <form

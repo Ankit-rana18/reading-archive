@@ -103,7 +103,7 @@ export function Settings() {
       <PageHead kicker="06 — Settings" title={<>The <em>colophon</em></>} dek="Appearance, goals, and the safekeeping of your archive." />
 
       <section className="sgroup">
-        <h2 className="sgroup__title lbl cobalt">Appearance</h2>
+        <h2 className="sgroup__title lbl accent">Appearance</h2>
         <Row title="Theme" desc="Warm paper by day, or ink for the evening.">
           <Tabs
             label="Theme"
@@ -141,7 +141,7 @@ export function Settings() {
       </section>
 
       <section className="sgroup">
-        <h2 className="sgroup__title lbl cobalt">Goals</h2>
+        <h2 className="sgroup__title lbl accent">Goals</h2>
         <Row title={`${year} reading goal`} desc="Books to finish this year.">
           <input
             className="input input--num"
@@ -167,7 +167,7 @@ export function Settings() {
       </section>
 
       <section className="sgroup">
-        <h2 className="sgroup__title lbl cobalt">Your data</h2>
+        <h2 className="sgroup__title lbl accent">Your data</h2>
         <Row
           title="Where it lives"
           desc="Everything is stored privately in this browser (IndexedDB), on this device only. Nothing is uploaded. Clearing site data or using another browser starts an empty archive — keep backups."
@@ -191,7 +191,7 @@ export function Settings() {
                 {info?.persisted ? (
                   'Yes'
                 ) : (
-                  <button type="button" className="lbl cobalt" onClick={() => requestPersistence().then(() => storageInfo().then(setInfo))}>
+                  <button type="button" className="lbl accent" onClick={() => requestPersistence().then(() => storageInfo().then(setInfo))}>
                     Ask browser
                   </button>
                 )}
@@ -244,7 +244,7 @@ export function Settings() {
       </section>
 
       <section className="sgroup">
-        <h2 className="sgroup__title lbl cobalt">About</h2>
+        <h2 className="sgroup__title lbl accent">About</h2>
         <div className="about">
           <p>
             <b>The Reading Archive</b> is a private, permanent record of the books in your life. It runs entirely in your browser and needs no account.

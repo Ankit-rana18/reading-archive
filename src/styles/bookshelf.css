@@ -36,23 +36,14 @@
   visibility: hidden;
 }
 
+/* The shelf board: a thin lit edge, a shallow warm-toned front, and a soft contact shadow. */
 .shelf__plank {
   position: absolute;
   left: 0;
   right: 0;
-  height: 1px;
-  background: var(--rule-strong);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(80, 58, 46, 0.6) 6%, rgba(80, 58, 46, 0.6) 94%, transparent);
   pointer-events: none;
-}
-
-.shelf__plank::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 1px;
-  height: 18px;
-  background: linear-gradient(to bottom, rgba(20, 16, 10, 0.1), rgba(20, 16, 10, 0));
 }
 
 .shelf__plank::before {
@@ -60,9 +51,22 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 4px;
-  height: 1px;
-  background: var(--rule);
+  top: 2px;
+  height: 12px;
+  background: linear-gradient(to bottom, rgba(179, 154, 112, 0.3), rgba(117, 75, 80, 0.06));
+  border-bottom: 1px solid var(--rule);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.shelf__plank::after {
+  content: '';
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 15px;
+  height: 40px;
+  background: radial-gradient(ellipse 50% 100% at 50% 0, rgba(48, 30, 28, 0.2), transparent 75%);
 }
 
 .stage {
@@ -238,8 +242,8 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  border: 1px solid var(--cobalt);
-  color: var(--cobalt);
+  border: 1px solid var(--accent);
+  color: var(--accent);
   background: color-mix(in srgb, var(--paper) 75%, transparent);
   display: grid;
   place-items: center;
@@ -253,8 +257,8 @@
 }
 
 .playring:hover {
-  background: var(--cobalt);
-  color: var(--on-cobalt);
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 /* ---------- caption ---------- */
@@ -304,7 +308,7 @@
 }
 
 .caption__sub {
-  color: var(--cobalt);
+  color: var(--accent);
   font-weight: 500;
 }
 
@@ -326,7 +330,7 @@
 }
 
 .caption__arrow:hover:not(:disabled) {
-  color: var(--cobalt);
+  color: var(--accent);
 }
 
 .caption__arrow--prev:hover:not(:disabled) {

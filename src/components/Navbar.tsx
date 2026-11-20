@@ -114,7 +114,7 @@ export function Navbar({ route }: { route: Route }) {
           <a href="#/settings" className="icon-btn nav__hide-sm" aria-label="Settings" aria-pressed={route === '/settings'}>
             <Settings2 size={17} strokeWidth={1.4} />
           </a>
-          <button type="button" className="btn btn--cobalt nav__add" onClick={() => ui.openAdd()}>
+          <button type="button" className="btn btn--accent nav__add" onClick={() => ui.openAdd()}>
             <Plus size={13} strokeWidth={1.6} />
             <span>Add book</span>
           </button>

@@ -62,7 +62,7 @@ export function Stars({
   );
 }
 
-/* ---------------- Tabs with sliding cobalt indicator ---------------- */
+/* ---------------- Tabs with sliding accent indicator ---------------- */
 export function Tabs<T extends string>({
   items,
   value,
@@ -219,7 +219,7 @@ export function Modal({
       <div ref={panel} className="modal" role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : undefined} style={{ maxWidth: width }}>
         <header className="modal__head">
           <div>
-            {kicker && <div className="lbl cobalt">{kicker}</div>}
+            {kicker && <div className="lbl accent">{kicker}</div>}
             <h2 className="modal__title">{title}</h2>
           </div>
           <button type="button" className="modal__close box lbl" onClick={onClose}>

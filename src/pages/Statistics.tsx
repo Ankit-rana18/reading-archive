@@ -41,7 +41,7 @@ export function Statistics() {
           <section className="goal">
             <Ring value={goal ? s.doneThisYear / goal : 0} />
             <div className="goal__text">
-              <span className="lbl cobalt">{year} reading goal</span>
+              <span className="lbl accent">{year} reading goal</span>
               {goal ? (
                 <p className="goal__line">
                   <b className="tnum">{s.doneThisYear}</b> of <b className="tnum">{goal}</b> books
@@ -56,7 +56,7 @@ export function Statistics() {
                 </p>
               )}
               {draft === null ? (
-                <button type="button" className="btn btn--sm btn--cobalt" onClick={() => setDraft(goal ? String(goal) : '')}>
+                <button type="button" className="btn btn--sm btn--accent" onClick={() => setDraft(goal ? String(goal) : '')}>
                   {goal ? 'Change target' : 'Set a target'}
                 </button>
               ) : (

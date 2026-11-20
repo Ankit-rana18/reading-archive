@@ -29,15 +29,15 @@ interface Props {
 
 const PERSPECTIVE = 2200;
 const smooth = (x: number) => x * x * (3 - 2 * x);
-const mod = (a: number, n: number) => ((a % n) + n) % n;
+/** How far (in books) a drag or wheel may stretch past either end before it springs back. */
+const OVERSCROLL = 0.18;
 
 export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
   { books, startId, caption, onOpen, onActiveChange, globalKeys, wheel = 'local', paused = false, className = '' },
   ref,
 ) {
+  // A finite shelf: every book appears exactly once, with a real first and last book.
   const N = books.length;
-  const loop = N >= 7;
-  const M = loop ? N * 3 : N;
 
   const wrapRef = useRef<HTMLElement>(null);
   const probeRef = useRef<HTMLDivElement>(null);
@@ -59,16 +59,16 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
     const w = shapes.map((s) => s.spine * H);
     const h = shapes.map((s) => s.height * H);
     const d = h.map((x) => x * 0.66);
-    const gap = H * 0.03;
+    const gap = H * 0.034;
     const G = gap * 1.8;
-    // Prefix sums over an extended index range [-M, 2M) so we never need modulo inside sums.
-    const P = new Float64Array(3 * M + 1);
-    for (let e = 0; e < 3 * M; e++) P[e + 1] = P[e] + w[mod(e - M, M) % N] + gap;
+    // Prefix sums: P[i] = total width of books 0..i-1 (each plus its gap).
+    const P = new Float64Array(N + 1);
+    for (let i = 0; i < N; i++) P[i + 1] = P[i] + w[i] + gap;
     const pitch = N ? w.reduce((a, b) => a + b, 0) / N + gap : 1;
     const dMax = N ? Math.max(...d) : 0;
     const dAvg = N ? d.reduce((a, b) => a + b, 0) / N : 0;
     return { w, h, d, gap, G, P, pitch, dMax, dAvg };
-  }, [shapes, H, M, N]);
+  }, [shapes, H, N]);
   const geoRef = useRef(geo);
   geoRef.current = geo;
 
@@ -99,12 +99,11 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
     const s = st.current;
     let idx = books.findIndex((b) => b.id === (prevActiveId.current ?? startId));
     if (idx < 0) idx = Math.floor((N - 1) / 2);
-    const base = loop ? N + idx : idx;
-    s.s = s.T = Math.max(0, base);
-    s.lift = new Float32Array(M);
+    s.s = s.T = Math.max(0, idx);
+    s.lift = new Float32Array(N);
     s.active = -1;
     s.hover = -1;
-    tapeEls.current.length = M;
+    tapeEls.current.length = N;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idsKey]);
 
@@ -124,25 +123,22 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
     };
   }, []);
 
-  const clampT = useCallback(
-    (T: number, soft = 0) => (loop ? T : Math.max(-soft, Math.min(N - 1 + soft, T))),
-    [loop, N],
-  );
-
-  const activeV = useCallback(() => (loop ? mod(Math.round(st.current.s), M) : Math.round(st.current.s)), [loop, M]);
+  /** Keep the target inside [0, N-1]; `soft` allows a small elastic stretch while dragging or wheeling. */
+  const clampT = useCallback((T: number, soft = 0) => Math.max(-soft, Math.min(Math.max(0, N - 1) + soft, T)), [N]);
+  const activeIndex = useCallback(() => Math.max(0, Math.min(N - 1, Math.round(st.current.s))), [N]);
 
   const rectOfActive = useCallback(() => {
-    const el = tapeEls.current[activeV()];
+    const el = tapeEls.current[activeIndex()];
     return el?.querySelector('.cv')?.getBoundingClientRect() ?? null;
-  }, [activeV]);
+  }, [activeIndex]);
 
   const openActive = useCallback(() => {
     const s = st.current;
     if (!N) return;
     s.T = clampT(Math.round(s.T));
-    const b = books[mod(Math.round(s.s), N)];
+    const b = books[activeIndex()];
     if (b) cb.current.onOpen(b, rectOfActive);
-  }, [N, books, clampT, rectOfActive]);
+  }, [N, books, clampT, activeIndex, rectOfActive]);
 
   const step = useCallback(
     (d: number) => {
@@ -159,19 +155,11 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
       goTo(id: string) {
         const i = books.findIndex((b) => b.id === id);
         if (i < 0) return;
-        const s = st.current;
-        if (!loop) s.T = i;
-        else {
-          const cur = mod(Math.round(s.T), N);
-          let delta = i - cur;
-          if (delta > N / 2) delta -= N;
-          if (delta < -N / 2) delta += N;
-          s.T = Math.round(s.T) + delta;
-        }
+        st.current.T = clampT(i);
       },
-      activeBook: () => (N ? books[mod(Math.round(st.current.s), N)] : undefined),
+      activeBook: () => (N ? books[activeIndex()] : undefined),
     }),
-    [books, loop, N, step],
+    [books, N, step, clampT, activeIndex],
   );
 
   /* ---------- animation loop ---------- */
@@ -181,14 +169,13 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
     const s = st.current;
     s.last = performance.now();
 
-    const layoutX = (c: number, rel: number) => {
+    // x of book `i` when book `c` is the open one (both inside [0, N)).
+    const layoutX = (c: number, i: number) => {
       const g = geoRef.current;
-      if (rel === 0) return 0;
-      const dc = g.d[mod(c, M) % N];
-      const idx = c + rel;
-      const wi = g.w[mod(idx, M) % N];
-      if (rel > 0) return dc / 2 + g.G + (g.P[idx + M] - g.P[c + 1 + M]) + wi / 2;
-      return -(dc / 2 + g.G + (g.P[c + M] - g.P[idx + 1 + M]) + wi / 2);
+      if (i === c) return 0;
+      const dc = g.d[c];
+      if (i > c) return dc / 2 + g.G + (g.P[i] - g.P[c + 1]) + g.w[i] / 2;
+      return -(dc / 2 + g.G + (g.P[c] - g.P[i + 1]) + g.w[i] / 2);
     };
 
     const frame = (now: number) => {
@@ -205,15 +192,9 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
       const k = reduce ? 1e6 : s.dragging ? 18 : 5.2;
       s.s += (s.T - s.s) * (1 - Math.exp(-k * dt));
       if (Math.abs(s.T - s.s) < 1e-4) s.s = s.T;
-      if (loop && Math.abs(s.s) > M * 4) {
-        const shift = Math.floor(s.s / M) * M;
-        s.s -= shift;
-        s.T -= shift;
-        if (s.down) s.down.T0 -= shift;
-      }
 
       // active book & caption
-      const act = mod(Math.round(s.s), N);
+      const act = Math.max(0, Math.min(N - 1, Math.round(s.s)));
       if (act !== s.active) {
         const d = Math.sign(s.T - s.s) || 1;
         const first = s.active === -1;
@@ -250,31 +231,27 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
       s.tiltY += (tY - s.tiltY) * te;
       s.tiltX += (tX - s.tiltX) * te;
 
-      // tapes
-      const k0 = Math.floor(s.s);
-      const f = s.s - k0;
-      const c0 = loop ? mod(k0, M) : k0;
-      const hasNext = loop || k0 + 1 <= N - 1;
-      const c1 = loop ? mod(k0 + 1, M) : k0 + 1;
+      // tapes: positions are interpolated between the layouts for the two nearest books.
+      // Past either end the whole row is offset (an elastic stretch that springs back), never wrapped.
+      const sIn = Math.max(0, Math.min(N - 1, s.s));
+      const over = (s.s - sIn) * g.pitch;
+      const c0 = Math.floor(sIn);
+      const f = sIn - c0;
+      const c1 = Math.min(N - 1, c0 + 1);
       const limit = W / 2 + 1.5 * g.dMax;
       const le = reduce ? 1 : 1 - Math.exp(-12 * dt);
-      for (let v = 0; v < M; v++) {
-        const el = tapeEls.current[v];
+      for (let bi = 0; bi < N; bi++) {
+        const el = tapeEls.current[bi];
         if (!el) continue;
-        let rel0 = v - c0;
-        if (loop) {
-          rel0 = mod(rel0, M);
-          if (rel0 > M / 2) rel0 -= M;
-        }
-        const r = rel0 - f;
-        const x0 = layoutX(c0, rel0);
-        const x = hasNext ? x0 + (layoutX(c1, rel0 - 1) - x0) * f : x0;
+        const v = bi;
+        const r = bi - s.s;
+        const x0 = layoutX(c0, bi);
+        const x = x0 + (layoutX(c1, bi) - x0) * f - over;
         if (Math.abs(x) > limit) {
           if (el.style.visibility !== 'hidden') el.style.visibility = 'hidden';
           continue;
         }
         if (el.style.visibility === 'hidden') el.style.visibility = '';
-        const bi = v % N;
         const o = smooth(Math.max(0, 1 - Math.abs(r)));
         const liftT = s.hover === v && Math.abs(r) > 0.5 && !isPaused ? 1 : 0;
         s.lift[v] += (liftT - s.lift[v]) * le;
@@ -307,7 +284,7 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [N, H, M, loop, books]);
+  }, [N, H, books]);
 
   /* ---------- pointer input ---------- */
   useEffect(() => {
@@ -328,7 +305,7 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
           wrap.setPointerCapture?.(e.pointerId);
           wrap.classList.add('is-dragging');
         }
-        if (s.down.moved) s.T = clampT(s.down.T0 - dx / geoRef.current.pitch, 0.4);
+        if (s.down.moved) s.T = clampT(s.down.T0 - dx / geoRef.current.pitch, OVERSCROLL);
       }
     };
     const onLeave = (e: PointerEvent) => {
@@ -360,13 +337,8 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
       }
       if (!t) return;
       const v = Number(t.dataset.v);
-      let rel = v - (loop ? mod(Math.round(s.s), M) : Math.round(s.s));
-      if (loop) {
-        rel = mod(rel, M);
-        if (rel > M / 2) rel -= M;
-      }
-      if (rel === 0 && Math.abs(s.T - s.s) < 0.5) openActive();
-      else s.T = clampT(Math.round(s.T) + rel);
+      if (v === activeIndex() && Math.abs(s.T - s.s) < 0.5) openActive();
+      else s.T = clampT(v);
     };
     const onCancel = () => {
       s.down = null;
@@ -387,7 +359,7 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onCancel);
     };
-  }, [clampT, openActive, loop, M]);
+  }, [clampT, openActive, activeIndex]);
 
   /* ---------- wheel ---------- */
   useEffect(() => {
@@ -403,7 +375,7 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
       e.preventDefault();
       const delta = horizontal ? e.deltaX : e.deltaY;
       const unit = e.deltaMode === 1 ? 32 : e.deltaMode === 2 ? 400 : 1;
-      s.T = clampT(s.T + ((delta * unit) / geoRef.current.pitch) * 0.5, 0.3);
+      s.T = clampT(s.T + ((delta * unit) / geoRef.current.pitch) * 0.5, OVERSCROLL);
       window.clearTimeout(s.wheelTimer);
       s.wheelTimer = window.setTimeout(() => (s.T = clampT(Math.round(s.T))), 160);
     };
@@ -453,19 +425,18 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
         <div ref={plankRef} className="shelf__plank" style={{ top: `calc(50% + ${plankY}px)` }} aria-hidden="true" />
         <div className="stage" style={{ '--H': `${H}px` } as React.CSSProperties}>
           {H > 0 &&
-            Array.from({ length: M }, (_, v) => {
-              const bi = v % N;
-              const b = books[bi];
+            books.map((b, bi) => {
+              const v = bi;
               const w = geo.w[bi];
               const h = geo.h[bi];
               const d = geo.d[bi];
               return (
                 <div
-                  key={`${b.id}-${v}`}
+                  key={b.id}
                   ref={(el) => (tapeEls.current[v] = el)}
                   className="tape"
                   data-v={v}
-                  aria-hidden={v % N !== active || undefined}
+                  aria-hidden={v !== active || undefined}
                 >
                   <div
                     className="tape__face sp"
@@ -477,7 +448,7 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
                     className="tape__face cv"
                     style={{ width: d, height: h, left: -d / 2, top: -h / 2, transform: `rotateY(90deg) translateZ(${w / 2}px)` }}
                   >
-                    <CoverArt book={b} eager={Math.abs(v - (loop ? N : 0) - active) < 4} />
+                    <CoverArt book={b} eager={Math.abs(v - active) < 4} />
                     <span className="cv__hinge" />
                   </div>
                 </div>
@@ -492,7 +463,7 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
       </section>
 
       <div className="caption">
-        <button className="caption__arrow caption__arrow--prev" aria-label="Previous book" onClick={() => step(-1)} disabled={!loop && active === 0}>
+        <button className="caption__arrow caption__arrow--prev" aria-label="Previous book" onClick={() => step(-1)} disabled={active <= 0}>
           <svg width="18" height="10" viewBox="0 0 18 10" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
             <path d="M5 1 L1 5 L5 9 M1 5 H17" />
           </svg>
@@ -502,7 +473,7 @@ export const BookShelf = forwardRef<ShelfHandle, Props>(function BookShelf(
           <MaskSwap text={l2} dir={dir} className="caption__sub lbl" />
           <MaskSwap text={l3} dir={dir} className="caption__meta" />
         </div>
-        <button className="caption__arrow caption__arrow--next" aria-label="Next book" onClick={() => step(1)} disabled={!loop && active === N - 1}>
+        <button className="caption__arrow caption__arrow--next" aria-label="Next book" onClick={() => step(1)} disabled={active >= N - 1}>
           <svg width="18" height="10" viewBox="0 0 18 10" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
             <path d="M13 1 L17 5 L13 9 M17 5 H1" />
           </svg>

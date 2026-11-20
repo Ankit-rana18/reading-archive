@@ -227,7 +227,7 @@ function SearchPanel({ onPick, onManual, isOwned }: { onPick: (r: SearchResult) 
             <button type="button" className="btn" onClick={() => run()}>
               Try again
             </button>
-            <button type="button" className="btn btn--cobalt" onClick={() => setSource(source === 'google' ? 'openlibrary' : 'google')}>
+            <button type="button" className="btn btn--accent" onClick={() => setSource(source === 'google' ? 'openlibrary' : 'google')}>
               Try {source === 'google' ? 'Open Library' : 'Google Books'}
             </button>
             <button type="button" className="btn btn--solid" onClick={onManual}>
@@ -274,7 +274,7 @@ function SearchPanel({ onPick, onManual, isOwned }: { onPick: (r: SearchResult) 
                     <span className="lbl muted">
                       {[r.year, r.editionCount && r.editionCount > 1 ? `${r.editionCount} editions` : null].filter(Boolean).join(' · ')}
                     </span>
-                    {owned && <span className="lbl cobalt">In your archive</span>}
+                    {owned && <span className="lbl accent">In your archive</span>}
                   </span>
                 </button>
               </li>

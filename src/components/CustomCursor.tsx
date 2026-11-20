@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 /**
  * A ring cursor that eases after the pointer. States come from the nearest
- * [data-cursor] ancestor: "spine" (shrinks), "open"/"view" (cobalt disc with a label),
+ * [data-cursor] ancestor: "spine" (shrinks), "open"/"view" (accent disc with a label),
  * or any button/link (small ring, no dot).
  */
 export function CustomCursor() {

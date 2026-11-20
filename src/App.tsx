@@ -5,6 +5,7 @@ import { UIProvider, useUI } from './hooks/useUI';
 import { useRoute } from './hooks/useRoute';
 import { Navbar } from './components/Navbar';
 import { CustomCursor } from './components/CustomCursor';
+import { Backdrop } from './components/Backdrop';
 import { BookDetail } from './components/BookDetail';
 import { AddBookModal } from './components/AddBookModal';
 import { CompleteDialog } from './components/CompleteDialog';
@@ -54,6 +55,7 @@ function Shell() {
 
   return (
     <>
+      <Backdrop dense={route !== '/'} />
       <a className="skip" href="#main">
         Skip to content
       </a>
