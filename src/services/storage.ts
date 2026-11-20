@@ -1,7 +1,7 @@
 /**
- * Storage layer. Everything goes through the StorageAdapter interface so a cloud
- * backend (e.g. Supabase) can be dropped in later without touching the UI.
- * The default adapter is IndexedDB: database "reading-archive" with stores
+ * Storage layer. Everything goes through the StorageAdapter interface; the active backend is
+ * either the cloud archive (services/cloud.ts, Supabase) or, when the cloud is not configured,
+ * this browser's IndexedDB: database "reading-archive" with stores
  * books, sessions and covers (cover images are kept as Blobs).
  */
 import type { Book, Prefs, ReadingSession } from '../types/book';
@@ -106,8 +106,18 @@ export const idbAdapter: StorageAdapter = {
     }),
 };
 
-/** The active adapter. Swap this for a cloud adapter later. */
-export const storage: StorageAdapter = idbAdapter;
+let active: StorageAdapter = idbAdapter;
+
+/** Point the whole app at a different backend (IndexedDB or the cloud archive). */
+export function setStorageAdapter(a: StorageAdapter) {
+  active = a;
+}
+
+/** The active adapter: every call is forwarded to whichever backend is current. */
+export const storage: StorageAdapter = new Proxy({} as StorageAdapter, {
+  get: (_t, key: keyof StorageAdapter) =>
+    (...args: unknown[]) => (active[key] as (...a: unknown[]) => unknown).apply(active, args),
+});
 
 /** Ask the browser not to evict the archive under storage pressure. */
 export async function requestPersistence(): Promise<boolean> {

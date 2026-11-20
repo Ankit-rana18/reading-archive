@@ -34,7 +34,7 @@ interface LibraryCtx {
 
 const Ctx = createContext<LibraryCtx | null>(null);
 
-export function LibraryProvider({ children, onError }: { children: ReactNode; onError: (msg: string) => void }) {
+export function LibraryProvider({ children, onError, readOnly = false }: { children: ReactNode; onError: (msg: string) => void; readOnly?: boolean }) {
   const [books, setBooks] = useState<Book[]>([]);
   const [sessions, setSessions] = useState<ReadingSession[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -289,8 +289,11 @@ export function LibraryProvider({ children, onError }: { children: ReactNode; on
     setCoverVersion((v) => v + 1);
   }, []);
 
-  const value = useMemo<LibraryCtx>(
-    () => ({
+  const value = useMemo<LibraryCtx>(() => {
+    // Viewers get the same data with every write refused (the database enforces this too).
+    const deny = () => Promise.reject(new Error('This archive is view-only.'));
+    const w = <F,>(f: F): F => (readOnly ? (deny as unknown as F) : f);
+    return {
       books,
       sessions,
       loaded,
@@ -298,18 +301,17 @@ export function LibraryProvider({ children, onError }: { children: ReactNode; on
       coverVersion,
       getBook,
       findDuplicate,
-      addBook,
-      updateBook,
-      deleteBook,
-      setStatus,
-      completeBook,
-      addSession,
-      deleteSession,
-      importBackup,
-      clearLibrary,
-    }),
-    [books, sessions, loaded, loadError, coverVersion, getBook, findDuplicate, addBook, updateBook, deleteBook, setStatus, completeBook, addSession, deleteSession, importBackup, clearLibrary],
-  );
+      addBook: w(addBook),
+      updateBook: w(updateBook),
+      deleteBook: w(deleteBook),
+      setStatus: w(setStatus),
+      completeBook: w(completeBook),
+      addSession: w(addSession),
+      deleteSession: w(deleteSession),
+      importBackup: w(importBackup),
+      clearLibrary: w(clearLibrary),
+    };
+  }, [readOnly, books, sessions, loaded, loadError, coverVersion, getBook, findDuplicate, addBook, updateBook, deleteBook, setStatus, completeBook, addSession, deleteSession, importBackup, clearLibrary]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

@@ -5,6 +5,8 @@ import { useLibrary } from '../hooks/useBooks';
 import { usePrefs } from '../hooks/usePrefs';
 import { useUI } from '../hooks/useUI';
 import { PageHead, Tabs } from '../components/ui';
+import { AccessPanel } from '../components/AccessPanel';
+import { useAccess } from '../hooks/useAccess';
 import { exportCSV, exportJSON, parseBackup, type ParsedBackup } from '../services/backup';
 import { requestPersistence, storageInfo } from '../services/storage';
 import { fmtDate } from '../lib/util';
@@ -26,6 +28,7 @@ function Row({ title, desc, children }: { title: string; desc?: string; children
 export function Settings() {
   const lib = useLibrary();
   const ui = useUI();
+  const access = useAccess();
   const { prefs, setPrefs, yearGoal, setYearGoal } = usePrefs();
   const year = new Date().getFullYear();
   const [info, setInfo] = useState<{ persisted: boolean; usage: number | null; quota: number | null } | null>(null);
@@ -102,6 +105,8 @@ export function Settings() {
     <main className="page page--narrow">
       <PageHead kicker="06 — Settings" title={<>The <em>colophon</em></>} dek="Appearance, goals, and the safekeeping of your archive." />
 
+      <AccessPanel />
+
       <section className="sgroup">
         <h2 className="sgroup__title lbl accent">Appearance</h2>
         <Row title="Theme" desc="Warm paper by day, or ink for the evening.">
@@ -140,6 +145,8 @@ export function Settings() {
         </Row>
       </section>
 
+      {access.canEdit && (
+        <>
       <section className="sgroup">
         <h2 className="sgroup__title lbl accent">Goals</h2>
         <Row title={`${year} reading goal`} desc="Books to finish this year.">
@@ -170,7 +177,11 @@ export function Settings() {
         <h2 className="sgroup__title lbl accent">Your data</h2>
         <Row
           title="Where it lives"
-          desc="Everything is stored privately in this browser (IndexedDB), on this device only. Nothing is uploaded. Clearing site data or using another browser starts an empty archive — keep backups."
+          desc={
+            access.mode === 'owner'
+              ? 'Your archive is stored in your Supabase cloud database: the same books on every device, readable by anyone with the link, editable only by you. Keep an occasional JSON backup anyway.'
+              : 'Everything is stored privately in this browser (IndexedDB), on this device only. Nothing is uploaded. Clearing site data or using another browser starts an empty archive — keep backups.'
+          }
         >
           <dl className="sinfo">
             <div>
@@ -242,12 +253,14 @@ export function Settings() {
           </button>
         </Row>
       </section>
+        </>
+      )}
 
       <section className="sgroup">
         <h2 className="sgroup__title lbl accent">About</h2>
         <div className="about">
           <p>
-            <b>The Reading Archive</b> is a private, permanent record of the books in your life. It runs entirely in your browser and needs no account.
+            <b>The Reading Archive</b> is a permanent record of the books in a reader’s life, kept by its owner and open for anyone to browse.
           </p>
           <p className="muted">
             Book search uses the free Open Library and Google Books APIs; only your search terms are sent to them. Covers come from those services or from images you upload.

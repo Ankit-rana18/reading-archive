@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { LibraryProvider } from './hooks/useBooks';
 import { PrefsProvider } from './hooks/usePrefs';
+import { AccessProvider, useAccess } from './hooks/useAccess';
 import { UIProvider, useUI } from './hooks/useUI';
 import { useRoute } from './hooks/useRoute';
 import { Navbar } from './components/Navbar';
@@ -79,8 +80,10 @@ function Shell() {
 
 function WithLibrary() {
   const ui = useUI();
+  const access = useAccess();
+  if (!access.ready) return <Backdrop dense={false} />;
   return (
-    <LibraryProvider onError={(m) => ui.toast(m, 'error')}>
+    <LibraryProvider key={access.mode} readOnly={!access.canEdit} onError={(m) => ui.toast(m, 'error')}>
       <Shell />
     </LibraryProvider>
   );
@@ -89,9 +92,11 @@ function WithLibrary() {
 export default function App() {
   return (
     <PrefsProvider>
-      <UIProvider>
-        <WithLibrary />
-      </UIProvider>
+      <AccessProvider>
+        <UIProvider>
+          <WithLibrary />
+        </UIProvider>
+      </AccessProvider>
     </PrefsProvider>
   );
 }

@@ -455,3 +455,71 @@
   padding-left: 0;
   padding-right: 0;
 }
+
+/* ======================================================================
+   View-only (visitors of a shared archive): every editing control is hidden.
+   The library refuses writes and the database rejects them; this is the polish.
+   ====================================================================== */
+.xp__fields {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+html[data-access='view'] :is(
+    .nav__add,
+    .mmenu__foot,
+    .home__cta,
+    .home__none .btn,
+    .page-head__aside .btn--solid,
+    .empty .btn--solid,
+    .detail__actions,
+    .editable__edit,
+    .editable__empty,
+    .listed__rm,
+    .listed__add,
+    .brow__actions,
+    .wish__addreason,
+    .wish__foot .btn,
+    .rp,
+    .goal .btn,
+    .today__goal .accent,
+    .sessions button
+  ) {
+  display: none !important;
+}
+
+/* fields stay readable, not greyed out */
+html[data-access='view'] .xp__fields :disabled {
+  opacity: 1;
+  color: inherit;
+  -webkit-text-fill-color: currentColor;
+  cursor: default;
+}
+
+html[data-access='view'] .xp__fields input[type='date']::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+html[data-access='view'] :is(.brow__status select, .prio select, .today__goal) {
+  pointer-events: none;
+}
+
+html[data-access='view'] :is(.brow__status select, .prio select) {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: none;
+  border-color: transparent;
+}
+
+.access__form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.access__form .input {
+  min-width: 220px;
+}

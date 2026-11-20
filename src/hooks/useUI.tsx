@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { ReadingStatus } from '../types/book';
+import { useAccess } from './useAccess';
 
 export interface DetailOrigin {
   /** Screen rect the paper sheet grows out of. */
@@ -45,6 +46,7 @@ interface UICtx {
 const Ctx = createContext<UICtx | null>(null);
 
 export function UIProvider({ children }: { children: ReactNode }) {
+  const { canEdit } = useAccess();
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [confirmState, setConfirm] = useState<UICtx['confirmState']>(null);
   const [detail, setDetail] = useState<UICtx['detail']>(null);
@@ -81,16 +83,16 @@ export function UIProvider({ children }: { children: ReactNode }) {
       openDetail: (id, origin = {}, focus) => setDetail({ id, origin, focus }),
       closeDetail: () => setDetail(null),
       editor,
-      openAdd: (status) => setEditor({ mode: 'add', status }),
-      openEdit: (id) => setEditor({ mode: 'edit', id }),
+      openAdd: (status) => canEdit && setEditor({ mode: 'add', status }),
+      openEdit: (id) => canEdit && setEditor({ mode: 'edit', id }),
       closeEditor: () => setEditor(null),
       searchOpen,
       setSearchOpen,
       completeId,
-      openComplete: (id) => setCompleteId(id),
+      openComplete: (id) => canEdit && setCompleteId(id),
       closeComplete: () => setCompleteId(null),
     }),
-    [toasts, toast, confirmState, confirm, closeConfirm, detail, editor, searchOpen, completeId],
+    [toasts, toast, confirmState, confirm, closeConfirm, detail, editor, searchOpen, completeId, canEdit],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

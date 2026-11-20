@@ -4,6 +4,7 @@ import { ArrowUpRight, BookmarkCheck, Pencil, Plus, Trash2, X } from 'lucide-rea
 import type { Book, ReadingStatus } from '../types/book';
 import { PRIORITY_LABEL, STATUS_LABEL } from '../types/book';
 import { useLibrary } from '../hooks/useBooks';
+import { useAccess } from '../hooks/useAccess';
 import { useUI } from '../hooks/useUI';
 import { useCover } from '../hooks/useCover';
 import { daysBetween, fmtDate, fmtDuration, minutesToRead, plural, prefersReducedMotion, progressOf, todayISO } from '../lib/util';
@@ -205,6 +206,7 @@ function Block({ title, children, id, wide }: { title: string; children: ReactNo
 export function BookDetail() {
   const ui = useUI();
   const lib = useLibrary();
+  const { canEdit } = useAccess();
   const d = ui.detail;
   const book = d ? lib.books.find((b) => b.id === d.id) : undefined;
   const layer = useRef<HTMLDivElement>(null);
@@ -372,7 +374,7 @@ export function BookDetail() {
             <Line className="detail__author">by {book.author}</Line>
             {meta && <Line className="lbl muted detail__meta">{meta}</Line>}
             <Line className="detail__rating">
-              <Stars value={book.rating} onChange={(v) => patch({ rating: v })} label="Your rating" />
+              <Stars value={book.rating} onChange={canEdit ? (v) => patch({ rating: v }) : undefined} label="Your rating" />
               <span className="lbl muted">{book.rating ? `${book.rating} / 5` : 'Not rated yet'}</span>
             </Line>
             {book.description && (
@@ -422,6 +424,8 @@ export function BookDetail() {
             <hr className="rule" />
           </header>
 
+          {/* Visitors see every field, but the browser itself disables the inputs inside. */}
+          <fieldset className="xp__fields" disabled={!canEdit}>
           <div className="xp__grid">
             <Block title="The record">
               <dl className="facts">
@@ -582,6 +586,7 @@ export function BookDetail() {
               )}
             </Block>
           </div>
+          </fieldset>
         </section>
       </div>
     </div>,
