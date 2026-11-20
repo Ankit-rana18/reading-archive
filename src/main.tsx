@@ -5,6 +5,7 @@ import './styles/global.css';
 import './styles/bookshelf.css';
 import './styles/components.css';
 import './styles/animations.css';
+import './styles/glass.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

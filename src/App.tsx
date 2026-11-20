@@ -40,13 +40,15 @@ function Shell() {
     document.title = `${names[route]} — The Reading Archive`;
   }, [route]);
 
-  // page change: a paper wipe instead of a fade
+  // page change: the glass sheet glides up into place. Transform only: clip-path or opacity on an
+  // ancestor would stop the glass from sampling the video (they create a backdrop root).
+  // The full-screen shelf (fixed) is left alone, as a transform would re-anchor it.
   useLayoutEffect(() => {
     const el = main.current;
-    if (!el || prefersReducedMotion()) return;
-    const a = el.animate([{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0% 0)' }], {
-      duration: 800,
-      easing: 'cubic-bezier(.76,0,.18,1)',
+    if (!el || route === '/' || prefersReducedMotion()) return;
+    const a = el.animate([{ transform: 'translateY(48px)' }, { transform: 'none' }], {
+      duration: 900,
+      easing: 'cubic-bezier(.2,.8,.2,1)',
     });
     return () => a.cancel();
   }, [route]);

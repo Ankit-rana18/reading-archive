@@ -178,11 +178,13 @@ export function Modal({
   useLayoutEffect(() => {
     if (!mounted || !open || !ref.current) return;
     const reduce = prefersReducedMotion();
-    ref.current.animate([{ clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], {
+    const unroll = ref.current.animate([{ clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], {
       duration: reduce ? 1 : 700,
       easing: SHEET,
       fill: 'both',
     });
+    // Drop the finished clip: a lingering clip-path on the layer would stop the glass panel from blurring the page.
+    unroll.onfinish = () => unroll.cancel();
     panel.current?.animate([{ transform: 'translateY(60px)' }, { transform: 'translateY(0)' }], {
       duration: reduce ? 1 : 900,
       easing: EASE,
