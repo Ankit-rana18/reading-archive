@@ -1,0 +1,512 @@
+/* ============ 3D bookshelf ============ */
+.shelf-block {
+  --H: min(46vh, 31vw);
+  position: relative;
+  width: 100%;
+}
+
+.shelf {
+  position: relative;
+  width: 100%;
+  height: calc(var(--H) + 96px);
+  perspective: 2200px;
+  perspective-origin: 50% 50%;
+  touch-action: pan-y;
+  overflow: hidden;
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.shelf:focus-visible {
+  outline: 1px dashed var(--rule);
+  outline-offset: -6px;
+}
+
+.shelf.is-dragging {
+  cursor: grabbing;
+}
+
+.shelf__probe {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  width: 1px;
+  height: var(--H);
+  visibility: hidden;
+}
+
+.shelf__plank {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--rule-strong);
+  pointer-events: none;
+}
+
+.shelf__plank::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 1px;
+  height: 18px;
+  background: linear-gradient(to bottom, rgba(20, 16, 10, 0.1), rgba(20, 16, 10, 0));
+}
+
+.shelf__plank::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 4px;
+  height: 1px;
+  background: var(--rule);
+}
+
+.stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+}
+
+.tape {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+  --o: 0;
+  --lift: 0;
+}
+
+.tape__face {
+  position: absolute;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.tape__face::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #000;
+  pointer-events: none;
+}
+
+.sp {
+  box-shadow: 1px 0 3px rgba(20, 16, 10, 0.22), 0 calc(var(--lift) * 18px) calc(var(--lift) * 26px) calc(var(--lift) * -8px) rgba(20, 16, 10, calc(var(--lift) * 0.45));
+}
+
+.sp::after {
+  opacity: calc(var(--o) * 0.55);
+}
+
+.cv {
+  box-shadow: 0 30px 60px -28px var(--shadow-ink);
+  background: var(--sheet);
+}
+
+.cv::after {
+  opacity: calc((1 - var(--o)) * 0.5);
+}
+
+.cv__hinge {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.32) 0, rgba(255, 255, 255, 0.16) 2.2%, rgba(0, 0, 0, 0.06) 4.5%, rgba(0, 0, 0, 0) 8%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.08));
+  z-index: 1;
+}
+
+/* ---------- spine ---------- */
+.spine {
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg);
+  color: var(--fg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 9% 0 7%;
+  gap: 6%;
+  overflow: hidden;
+}
+
+.spine::before {
+  /* cloth texture + cylindrical shading */
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.32) 0%, rgba(255, 255, 255, 0.1) 16%, rgba(255, 255, 255, 0.04) 38%, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.12) 84%, rgba(0, 0, 0, 0.38) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9 .35' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .28 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+.spine__band {
+  position: relative;
+  width: 100%;
+  height: 2.6%;
+  flex: none;
+  border-top: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  opacity: 0.75;
+}
+
+.spine__title {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  writing-mode: vertical-rl;
+  font-family: var(--serif);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spine__author {
+  position: relative;
+  writing-mode: vertical-rl;
+  font-family: var(--sans);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  max-height: 22%;
+  overflow: hidden;
+  opacity: 0.85;
+}
+
+.spine--v1 .spine__title {
+  font-family: var(--display);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.spine--v2 {
+  padding-top: 18%;
+}
+
+.spine--v2::after {
+  /* label panel */
+  content: '';
+}
+
+.spine--v2 .spine__title {
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.spine--v3 .spine__band--top {
+  height: 9%;
+  border: 0;
+  background: currentColor;
+  opacity: 0.18;
+}
+
+.spine__ribbon {
+  position: absolute;
+  bottom: -2px;
+  left: 28%;
+  width: 18%;
+  height: 7%;
+  background: var(--rust);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+/* ---------- play ring ---------- */
+.playring {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--cobalt);
+  color: var(--cobalt);
+  background: color-mix(in srgb, var(--paper) 75%, transparent);
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%) scale(0);
+  z-index: 2;
+  transition: background 0.4s var(--ease), color 0.4s var(--ease);
+}
+
+.playring svg {
+  transform: translateX(1.5px);
+}
+
+.playring:hover {
+  background: var(--cobalt);
+  color: var(--on-cobalt);
+}
+
+/* ---------- caption ---------- */
+.caption {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: start;
+  gap: 12px;
+  padding: 0 20px;
+  margin-top: 4px;
+}
+
+.caption__lines {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: 9px;
+  pointer-events: none;
+  min-width: 0;
+}
+
+.mask-swap {
+  display: grid;
+  overflow: hidden;
+  width: 100%;
+  max-width: 760px;
+  min-width: 0;
+  text-align: center;
+}
+
+.mask-swap > span {
+  grid-area: 1 / 1;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-bottom: 0.06em;
+}
+
+.caption__title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 31px;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+}
+
+.caption__sub {
+  color: var(--cobalt);
+  font-weight: 500;
+}
+
+.caption__meta {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.caption__arrow {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  transition: color 0.3s var(--ease), transform 0.4s var(--ease);
+  margin-top: 2px;
+}
+
+.caption__arrow:hover:not(:disabled) {
+  color: var(--cobalt);
+}
+
+.caption__arrow--prev:hover:not(:disabled) {
+  transform: translateX(-3px);
+}
+
+.caption__arrow--next:hover:not(:disabled) {
+  transform: translateX(3px);
+}
+
+.caption__arrow:disabled {
+  opacity: 0.25;
+}
+
+@media (max-width: 767px) {
+  .shelf-block {
+    --H: min(60vw, 40svh);
+  }
+  .caption {
+    padding: 0 6px;
+    grid-template-columns: 40px 1fr 40px;
+    gap: 4px;
+  }
+  .caption__title {
+    font-size: 24px;
+  }
+}
+
+/* ---------- generated cover ---------- */
+.gcover {
+  position: absolute;
+  inset: 0;
+  container-type: inline-size;
+  background: var(--bg);
+  color: var(--fg);
+  overflow: hidden;
+}
+
+.gcover__in {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 13cqw 10cqw 10cqw;
+}
+
+.gcover::before {
+  content: '';
+  position: absolute;
+  inset: 5cqw;
+  border: 1px solid currentColor;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.gcover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8 .5' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+.gcover__author {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 4.6cqw;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.gcover__rule {
+  width: 18cqw;
+  height: 1px;
+  background: currentColor;
+  margin: 7cqw 0 9cqw;
+  opacity: 0.7;
+}
+
+.gcover__title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: var(--ts);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.gcover__orn {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 3cqw;
+  font-size: 3.5cqw;
+  opacity: 0.8;
+}
+
+.gcover__orn i {
+  width: 10cqw;
+  height: 1px;
+  background: currentColor;
+}
+
+.gcover__foot {
+  margin-top: 4cqw;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 3.6cqw;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.cover-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* ---------- book cover as object (grid, lists) ---------- */
+.bookcover {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  perspective: 900px;
+}
+
+.bookcover__inner {
+  position: absolute;
+  inset: 0;
+  border-radius: 1px 3px 3px 1px;
+  overflow: hidden;
+  background: var(--sheet);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06), 0 18px 30px -18px var(--shadow-ink), 6px 0 0 -3px color-mix(in srgb, var(--sheet) 80%, #b9b2a3),
+    7px 0 0 -3px rgba(0, 0, 0, 0.12);
+  transform-origin: 0 50%;
+  transition: transform 0.7s var(--ease), box-shadow 0.7s var(--ease);
+}
+
+.bookcover__hinge {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0, rgba(255, 255, 255, 0.18) 2.4%, rgba(0, 0, 0, 0.05) 5%, rgba(0, 0, 0, 0) 9%);
+}
+
+.is-liftable:hover .bookcover__inner,
+.is-liftable:focus-visible .bookcover__inner {
+  transform: translateY(-6px) rotateY(-9deg);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06), 0 30px 40px -20px var(--shadow-ink), 6px 0 0 -3px color-mix(in srgb, var(--sheet) 80%, #b9b2a3),
+    7px 0 0 -3px rgba(0, 0, 0, 0.12);
+}
+
+/* ---------- empty shelf ---------- */
+.ghost-shelf {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+  height: var(--H);
+  padding-bottom: 0;
+  border-bottom: 1px solid var(--rule-strong);
+  width: min(560px, 86vw);
+  margin: 0 auto;
+}
+
+.ghost-shelf i {
+  display: block;
+  border: 1px dashed var(--rule-strong);
+  border-bottom: 0;
+  opacity: 0.4;
+  border-radius: 2px 2px 0 0;
+}

@@ -1,0 +1,166 @@
+/* ============ cursor, toasts, motion utilities ============ */
+.cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 58px;
+  height: 58px;
+  margin: -29px 0 0 -29px;
+  z-index: 100;
+  pointer-events: none;
+  display: none;
+}
+
+@media (pointer: fine) {
+  .cursor.is-visible {
+    display: block;
+  }
+}
+
+.cursor__ring {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  transition: transform 0.5s var(--ease), background-color 0.4s var(--ease), border-color 0.4s var(--ease);
+}
+
+.cursor__dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--ink);
+  transition: transform 0.4s var(--ease);
+}
+
+.cursor__label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 10px;
+  line-height: 1.25;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--on-cobalt);
+  transform: scale(0);
+  transition: transform 0.45s var(--ease);
+}
+
+.cursor[data-state='spine'] .cursor__ring {
+  transform: scale(0.72);
+}
+
+.cursor[data-state='btn'] .cursor__ring {
+  transform: scale(0.55);
+}
+
+.cursor[data-state='btn'] .cursor__dot,
+.cursor[data-state='text'] .cursor__dot {
+  transform: scale(0);
+}
+
+.cursor[data-state='text'] .cursor__ring {
+  transform: scale(0.32, 0.5);
+  border-radius: 2px;
+}
+
+.cursor[data-state='open'] .cursor__ring {
+  transform: scale(1.75);
+  background: var(--cobalt);
+  border-color: var(--cobalt);
+}
+
+.cursor[data-state='open'] .cursor__dot {
+  transform: scale(0);
+}
+
+.cursor[data-state='open'] .cursor__label {
+  transform: scale(1);
+}
+
+.cursor.is-down .cursor__ring {
+  transform: scale(0.62);
+}
+
+.cursor.is-down[data-state='open'] .cursor__ring {
+  transform: scale(1.55);
+}
+
+/* toasts: rise through a mask */
+.toasts {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 90;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  pointer-events: none;
+  width: min(92vw, 560px);
+}
+
+.toast {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 12px 16px;
+  animation: toast-in 0.6s var(--ease) both;
+  text-align: center;
+  max-width: 100%;
+}
+
+.toast .lbl {
+  line-height: 1.4;
+}
+
+.toast--error {
+  background: var(--rust);
+  color: #fff;
+}
+
+@keyframes toast-in {
+  from {
+    clip-path: inset(100% 0 0 0);
+    transform: translateY(12px);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    transform: none;
+  }
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+  vertical-align: -2px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+  .spin {
+    animation-duration: 0.9s !important;
+  }
+}
+
+:root[data-motion='reduce'] *,
+:root[data-motion='reduce'] *::before,
+:root[data-motion='reduce'] *::after {
+  transition-duration: 1ms !important;
+}
